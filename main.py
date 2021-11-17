@@ -57,6 +57,7 @@ class Environment:
             cv2.waitKey(0)
         if filename is not None:
             cv2.imwrite(filename+'_depth.png', result_image[:, :, 3])
+            cv2.imwrite(filename + '_color.png', result_image[:, :, :3])
         return result_image
 
     def update_height_map(self, res=(500, 500), show=True, filename=None):
@@ -149,11 +150,13 @@ class Plane:
 
         return points
 
+
 def store_pc(filename, pc):
     with open(filename, 'w+') as f:
         for idx in range(pc.shape[0]):
             point = pc[idx, :]
             f.write(',\t'.join([str(x) for x in point])+'\n')
+
 
 def get_camera_transformation(x, y, z, yaw, pitch):
     camera = rotation_x(-np.pi/2 + pitch)
@@ -161,10 +164,11 @@ def get_camera_transformation(x, y, z, yaw, pitch):
     camera = translation(np.array([x, y, z])).dot(camera)
     return camera
 
+
 if __name__ == '__main__':
 
     objects = []
-    objects.append(Box(np.array([0, 0]), 100, 100, 20, (0,0,255)))
+    objects.append(Box(np.array([0, 0]), 100, 100, 10, (0,0,255)))
     objects.append(Plane(np.array([0,0]), 100, 100, (128,128,128)))
     objects.append(Box(np.array([20, 20]), 10, 10, 10, (0,0,255)))
     objects.append(Box(np.array([70, 20]), 10, 10, 10, (0, 0, 255)))
@@ -173,7 +177,6 @@ if __name__ == '__main__':
     points = []
     for o in objects:
         points = points + o.get_pc(1)
-
     hm = cv2.imread('height.png')
     hm = cv2.cvtColor(hm, cv2.COLOR_BGR2GRAY)
     env = Environment(hm)
